@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Algebra Tiles Drag and Drop</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+    }
+
+    .container {
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .algebra-tiles {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .tile {
+      width: 50px;
+      height: 50px;
+      border: 1px solid #ccc;
+      margin: 5px;
+      cursor: grab;
+    }
+
+    .psquare {
+      background-color: #1eff00;
+    }
+
+    .msquare {
+      background-color: #ff0000;
+    }
+
+    .prectangle {
+      background-color: #1eff00;
+      width: 100px;
+    }
+
+    .mrectangle {
+      background-color: #ff0000;
+      width: 100px;
+    }
+    .pbigsquare {
+      background-color: #1eff00;
+      width: 100px;
+      height: 100px;
+    }
+
+    .mbigsquare {
+      background-color: #ff0000;
+      width: 100px;
+      height: 100px;
+    }
+
+    .pvrectangle {
+      background-color: #1eff00;
+      height: 100px;
+    }
+
+    .mvrectangle {
+      background-color: #ff0000;
+      height: 100px;
+    }
+
+    .drop-zone {
+      width: 500px;
+      height: 500px;
+      border: 2px solid #ccc;
+      padding: 20px;
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      grid-template-rows: repeat(10, 1fr);
+    }
+
+    .tile-in-drop-zone {
+      position: absolute;
+    }
+
+    .tiles-left {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="tiles">
+      <h2>Algebra Tiles</h2>
+      <div class="algebra-tiles">
+      </div> 
+            <div class="tile pbigsquare" draggable="true"></div>
+            <div class="tile pvrectangle" draggable="true"></div>
+            <div class="tile prectangle" draggable="true"></div>
+            <div class="tile psquare" draggable="true"></div>
+            <div class="tile mbigsquare" draggable="true"></div>
+            <div class="tile mvrectangle" draggable="true"></div>
+            <div class="tile mrectangle" draggable="true"></div>
+            <div class="tile msquare" draggable="true"></div>
+    </div>
+   
+    <div class="drop-zone"></div>
+  </div>
+
+  <script>
+    const tiles = document.querySelectorAll('.tile');
+    const dropZone = document.querySelector('.drop-zone');
+
+    tiles.forEach(tile => {
+      tile.addEventListener('dragstart', handleDragStart);
+    });
+
+    dropZone.addEventListener('dragover', preventDefault);
+    dropZone.addEventListener('drop', handleDrop);
+
+    function handleDragStart(event) {
+      event.dataTransfer.setData('tileType', event.target.classList[1]);
+    }
+
+    function preventDefault(event) {
+      event.preventDefault();
+    }
+
+    function handleDrop(event) {
+      event.preventDefault();
+
+      const tileType = event.dataTransfer.getData('tileType');
+      const newTile = document.createElement('div');
+      newTile.classList.add('tile', 'tile-in-drop-zone');
+      newTile.classList.add(tileType);
+
+      dropZone.appendChild(newTile);
+
+      // Set position within the grid
+      const gridSize = 50; // size of each grid cell
+      const rect = dropZone.getBoundingClientRect();
+      const offsetX = event.clientX - rect.left - gridSize / 2;
+      const offsetY = event.clientY - rect.top - gridSize / 2;
+
+      const gridX = Math.floor(offsetX / gridSize);
+      const gridY = Math.floor(offsetY / gridSize);
+
+      newTile.style.left = gridX * gridSize + 'px';
+      newTile.style.top = gridY * gridSize + 'px';
+
+      newTile.addEventListener('mousedown', handleTileDragStart);
+    }
+
+    function handleTileDragStart(event) {
+      event.preventDefault();
+
+      const tile = event.target;
+      const offsetX = event.clientX - tile.getBoundingClientRect().left;
+      const offsetY = event.clientY - tile.getBoundingClientRect().top;
+
+      function onMouseMove(e) {
+        tile.style.left = e.clientX - offsetX + 'px';
+        tile.style.top = e.clientY - offsetY + 'px';
+      }
+
+      function onMouseUp() {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+      }
+
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    }
+  </script>
+</body>
+</html>
